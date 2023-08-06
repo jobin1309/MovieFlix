@@ -1,5 +1,4 @@
 package com.example.netflixclone.adapter
-
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -59,6 +58,21 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
 
         }
 
+        fun bind(item: MoviesResult) {
+              binding.apply {
+                  movieNameText.text = item.title
+                  val likesInThousand1 = item.voteAverage.toDouble() / 1000
+                  likesText.text = "${likesInThousand1}K"
+
+                  val moviePosterURL = Constants.POSTER_BASE_URL + item.posterPath
+                  firstImageView.load(moviePosterURL) {
+                      crossfade(true)
+                      placeholder(R.drawable.ic_launcher_foreground)
+                  }
+
+              }
+        }
+
 
         companion object {
             fun from(parent: ViewGroup): ViewHolder {
@@ -80,26 +94,28 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        var currentMovie1 = movieList[position * 2]
-        var currentMovie2 =
-            if (position * 2 + 1 < movieList.size) movieList[position * 2 + 1] else null
-        if (currentMovie2 != null && currentMovie1 != null) {
+        val index = position * 2
+        val currentMovie1 = movieList.getOrNull(index)
+        val currentMovie2 = movieList.getOrNull(index + 1)
+
+        if (currentMovie1 != null && currentMovie2 != null) {
             holder.bind(currentMovie1, currentMovie2)
+        } else if (currentMovie1 != null) {
+            holder.bind(currentMovie1)
         }
 
         holder.itemView.findViewById<ConstraintLayout>(R.id.constraintLayout).setOnClickListener {
-
-            val action =
-                MovieFragmentDirections.actionMovieFragmentToDetailFragment(currentMovie1.id)
-            holder.itemView.findNavController().navigate(action)
+            currentMovie1?.let {
+                val action = MovieFragmentDirections.actionMovieFragmentToDetailFragment(it.id)
+                holder.itemView.findNavController().navigate(action)
+            }
         }
 
         holder.itemView.findViewById<ConstraintLayout>(R.id.constraintLayout2).setOnClickListener {
-
-            val action =
-                MovieFragmentDirections.actionMovieFragmentToDetailFragment(currentMovie2!!.id)
-            holder.itemView.findNavController().navigate(action)
-
+            currentMovie2?.let {
+                val action = MovieFragmentDirections.actionMovieFragmentToDetailFragment(it.id)
+                holder.itemView.findNavController().navigate(action)
+            }
         }
 
     }
